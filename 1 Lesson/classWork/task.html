@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>ITEA. JS Professional. Lesson 1. Task 2</title>
+      <style>
+
+          #renderArea {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+          }
+
+          .post{
+              display: flex;
+              max-width: 700px;
+          }
+
+          .post__image {
+              max-width: 200px;
+              flex: 100%;
+          }
+
+          .post__image img {
+              max-width: 100%;
+          }
+
+          .post__like {
+              cursor: pointer;
+              color: #92000e;
+              padding: 5px 10px;
+              border: 1px solid #92000e;
+              display: inline-block;
+              border-radius: 5px;
+          }
+
+      </style>
+  </head>
+  <body>
+    <div id="renderArea"></div>
+    <script>
+    /*
+
+    Задание 1.
+
+    Проверка уровня знаний для старта.
+
+    1) Ваша задача используя классы или ф-ю конструктор,
+    создать объекты которые будут содержать все данные которые есть в объекте ниже (переменная data),
+    а так же будут содержать дополнительное поле likes, которое по умолчанию будет равно нулю.
+
+    2) Дальше, вам необходимо вывести эти сообщения на страницу по шаблону
+    (макет находится в папке classworks).
+
+    3) Кнопка like должна обновлять счетчик лайков в этом объекте и перерисовывать объект
+    на странице
+
+    + бонус:
+    - Хранить данные о лайках постов в localStorage и не давать пользователю за один заход на страницу поставить больше одного лайка на один пост.
+    - После перезагрузки страничка подтягивает данные из localStorage о количестве
+    лайков у каждого сообщения
+
+    - Добавить к классу\конструктору поле "answers" (В модель), а в шаблон вывода
+    под сообщением инпут в который можно будет добавить комментарий и кнопку для его
+    отправки (Макет: js_prof_l1c2_bonus)
+    - Комментарии также хранятся в localStorage и подгружаются после перезагрузки
+    страницы.
+
+
+
+
+    */
+
+    const data = [
+      {
+        id: 1,
+        link: "#1",
+        name: "Established fact123123",
+        description: "The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. ",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400926_file_162303.jpg",
+      },
+      {
+        id: 2,
+        link: "#1",
+        name: "Established fact",
+        description: "The point of using Lorem Ipsum is that it has a more-or-less normal distribution of letters, as opposed to using 'Content here, content here', making it look like readable English. ",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400926_file_162303.jpg",
+      },
+      {
+        id: 3,
+        link: "#2",
+        name: "Many packages",
+        description: "Many desktop publishing packages and web page editors now use Lorem Ipsum as their default model text, and a search for 'lorem ipsum' will uncover many web sites still in their infancy.",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400859_file_162309.jpg",
+      },
+      {
+        id: 4,
+        link: "#3",
+        name: "Suffered alteration",
+        description: "Looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature.",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400896_file_162315.jpg",
+      },{
+        id: 5,
+        link: "#4",
+        name: "Discovered source",
+        description: "It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400878_file_162324.jpg",
+      },{
+        id: 6,
+        link: "#5",
+        name: "Handful model",
+        description: "The generated Lorem Ipsum is therefore always free from repetition, injected humour, or non-characteristic words etc.",
+        image: "http://telegram.org.ru/uploads/posts/2017-10/1507400876_file_162328.jpg",
+      },
+    ];
+
+      let renderArea = document.getElementById('renderArea');
+
+      class Posts {
+          constructor(posts){
+              this.posts = posts;
+          }
+
+          init(){
+              if(localStorage.getItem('posts')){
+                  const cache = JSON.parse(localStorage.getItem('posts'));
+                  this.posts = this.posts.map(e => ({ ...e, ...cache.find(c => e.id === c.id), liked: false}))
+              }else {
+
+                  this.posts = this.posts.map(e => ({
+                      ...e,
+                      likes: 0,
+                      comments: [],
+                      liked: false
+                  }));
+
+                  const cache = this.posts.map(e => ({
+                      id: e.id,
+                      likes: 0,
+                      comments: [],
+                  }));
+                  localStorage.setItem('posts', JSON.stringify(cache));
+              }
+              this.print();
+          }
+
+          print(){
+              let render = '';
+              this.posts.map(e =>
+                  render += `<div class="post">
+                    <div class="post__image">
+                        <img src="${e.image}" alt="">
+                    </div>
+                    <div class="post__content">
+                        <h2 class="post__title">${e.name}</h2>
+                        <p class="post__body">${e.description}</p>
+                        <div class="post__like ${!e.liked ? `post__like_active` : ``}" ${!e.liked ? `onclick="posts.like(${e.id})"` : ``}>${e.likes} Likes</div>
+                        <div class="post__comment"></div>
+                    </div>
+                </div>`
+              );
+              renderArea.innerHTML = render;
+          }
+
+          like(id) {
+              this.posts = this.posts.map( e => e.id === +id ? {...e, likes: ++e.likes, liked: true} : e);
+
+              const cache = this.posts.map(e => ({
+                  id: e.id,
+                  likes: e.likes,
+                  comments: e.comments,
+              }));
+              localStorage.setItem('posts', JSON.stringify(cache));
+
+              this.print();
+          }
+
+      }
+
+    const posts = new Posts(data);
+    posts.init();
+
+    </script>
+  </body>
+</html>
